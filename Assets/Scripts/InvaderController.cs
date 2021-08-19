@@ -23,7 +23,6 @@ public class InvaderController : MonoBehaviour
             if (lifes == 0)
             {
                 this.killed?.Invoke(this);
-                this.gameObject.SetActive(false);
             }
         }
     }

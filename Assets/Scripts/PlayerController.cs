@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         Move();
+        Attack();
     }
 
     private void Move()
@@ -44,11 +45,6 @@ public class PlayerController : MonoBehaviour
 
         position.x = Mathf.Clamp(position.x, leftEdge.x, rightEdge.x);
         this.transform.position = position;
-
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
-        {
-            Attack();
-        }
     }
 
     private void Attack()
@@ -61,13 +57,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Missile"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("Missile") ||
+            other.gameObject.layer == LayerMask.NameToLayer("Invader"))
         {
             lifes--;
-            if (lifes == 0)
-            {
+            if (this.killed != null&& lifes==0) {
                 this.killed.Invoke();
-                gameObject.SetActive(false);
             }
         }
     }

@@ -1,43 +1,43 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class GridInvaders : MonoBehaviour
 {
-    [Header("Invaders")]
-    public InvaderController[] prefabs = new InvaderController[5];
+    [Header("Invaders")] public InvaderController[] prefabs = new InvaderController[5];
     public AnimationCurve speed = new AnimationCurve();
+    private float wightInvader=0.16f;
     public Vector3 direction { get; private set; } = Vector3.right;
     public Vector3 initialPosition { get; private set; }
     public System.Action<InvaderController> killed;
 
     public int AmountKilled { get; private set; }
-    public int AmountAlive => this.TotalAmount - this.AmountKilled;
-    public int TotalAmount => this.rows * this.columns;
-    public float PercentKilled => (float)this.AmountKilled / (float)this.TotalAmount;
+    public int AmountAlive => TotalAmount - AmountKilled;
+    public int TotalAmount => rows * columns;
+    public float PercentKilled => (float) AmountKilled / (float) TotalAmount;
 
-    [Header("Grid")]
-    public int rows = 5;
+    [Header("Grid")] public int rows = 5;
     public int columns = 11;
 
-    [Header("Missiles")]
-    public Projectile missilePrefab;
+    [Header("Missiles")] public Projectile missilePrefab;
     public float missileSpawnRate = 1.0f;
 
     private void Awake()
     {
-        this.initialPosition = this.transform.position;
+        initialPosition = transform.position;
 
-        for (int i = 0; i < this.rows; i++)
+        for (int i = 0; i < rows; i++)
         {
-            float width = 0.5f * (this.columns - 1);
-            float height = 0.5f * (this.rows - 1);
+            float width = 0.5f * (columns - 1);
+            float height = 0.5f * (rows - 1);
             Vector2 centerOffset = new Vector2(-width * 0.5f, -height * 0.5f);
             Vector3 rowPosition = new Vector3(centerOffset.x, (0.5f * i) + centerOffset.y, 0.0f);
 
-            for (int j = 0; j < this.columns; j++)
+            for (int j = 0; j < columns; j++)
             {
-                InvaderController invader = Instantiate(this.prefabs[i], this.transform);
+                InvaderController invader = Instantiate(prefabs[i], transform);
                 invader.killed += OnInvaderKilled;
 
                 Vector3 position = rowPosition;
@@ -49,7 +49,7 @@ public class GridInvaders : MonoBehaviour
 
     private void Start()
     {
-        InvokeRepeating(nameof(MissileAttack), this.missileSpawnRate, this.missileSpawnRate);
+        InvokeRepeating(nameof(MissileAttack), missileSpawnRate, missileSpawnRate);
     }
 
     private void MissileAttack()
@@ -60,14 +60,17 @@ public class GridInvaders : MonoBehaviour
             return;
         }
 
-        foreach (Transform invader in this.transform)
+        foreach (Transform invader in transform)
         {
-            if (!invader.gameObject.activeInHierarchy) {
+            Vector2 playerRay = new Vector2(invader.transform.position.x, invader.transform.position.y - wightInvader);
+            RaycastHit2D hit = Physics2D.Raycast(playerRay, Vector2.down);
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Invader") || !invader.gameObject.activeInHierarchy)
+            {
                 continue;
             }
 
 
-            if (Random.value < (1.0f / (float)amountAlive))
+            if (UnityEngine.Random.value < (1.0f / (float)amountAlive))
             {
                 Instantiate(this.missilePrefab, invader.position, Quaternion.identity);
                 break;
@@ -77,25 +80,26 @@ public class GridInvaders : MonoBehaviour
 
     private void Update()
     {
-        float speed = this.speed.Evaluate(this.PercentKilled);
-        this.transform.position += this.direction * speed * Time.deltaTime;
+        float speed = this.speed.Evaluate(PercentKilled);
+        transform.position += direction * speed * Time.deltaTime;
 
 
         Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
         Vector3 rightEdge = Camera.main.ViewportToWorldPoint(Vector3.right);
-        
-        foreach (Transform invader in this.transform)
+
+        foreach (Transform invader in transform)
         {
-            if (!invader.gameObject.activeInHierarchy) {
+            if (!invader.gameObject.activeInHierarchy)
+            {
                 continue;
             }
 
-            if (this.direction == Vector3.right && invader.position.x >= (rightEdge.x - 1.0f))
+            if (direction == Vector3.right && invader.position.x >= (rightEdge.x - 1.0f))
             {
                 AdvanceRow();
                 break;
             }
-            else if (this.direction == Vector3.left && invader.position.x <= (leftEdge.x + 1.0f))
+            else if (direction == Vector3.left && invader.position.x <= (leftEdge.x + 1.0f))
             {
                 AdvanceRow();
                 break;
@@ -105,30 +109,30 @@ public class GridInvaders : MonoBehaviour
 
     private void AdvanceRow()
     {
-        this.direction = new Vector3(-this.direction.x, 0.0f, 0.0f);
+        direction = new Vector3(-direction.x, 0.0f, 0.0f);
 
-        Vector3 position = this.transform.position;
+        Vector3 position = transform.position;
         position.y -= 1.0f;
-        this.transform.position = position;
+        transform.position = position;
     }
 
     private void OnInvaderKilled(InvaderController invader)
     {
         invader.gameObject.SetActive(false);
 
-        this.AmountKilled++;
-        this.killed(invader);
+        AmountKilled++;
+        killed(invader);
     }
 
     public void ResetInvaders()
     {
-        this.AmountKilled = 0;
-        this.direction = Vector3.right;
-        this.transform.position = this.initialPosition;
+        AmountKilled = 0;
+        direction = Vector3.right;
+        transform.position = initialPosition;
 
-        foreach (Transform invader in this.transform) {
+        foreach (Transform invader in transform)
+        {
             invader.gameObject.SetActive(true);
         }
     }
-
 }

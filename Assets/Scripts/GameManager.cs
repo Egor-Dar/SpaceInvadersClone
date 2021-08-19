@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public sealed class GameManager : MonoBehaviour
 {
     private GridInvaders invaders;
+    private PlayerController player;
     public Text scoreText;
     private int Score;
 
@@ -15,11 +16,13 @@ public sealed class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        this.player = FindObjectOfType<PlayerController>();
         this.invaders = FindObjectOfType<GridInvaders>();
     }
 
     private void Start()
     {
+        this.player.killed += OnPlayerKilled;
         this.invaders.killed += OnInvaderKilled;
     }
 
@@ -33,6 +36,9 @@ public sealed class GameManager : MonoBehaviour
         SetScore(this.score + invader.score);
 
     }
-
+    private void OnPlayerKilled()
+    {
+        this.player.gameObject.SetActive(false);
+    }
 
 }

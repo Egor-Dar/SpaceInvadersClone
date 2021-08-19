@@ -28,7 +28,7 @@ public class Projectile : MonoBehaviour
     private void CheckCollision(Collider2D other)
     {
         Obstacle obstacle = other.gameObject.GetComponent<Obstacle>();
-        if (obstacle != null )
+        if (obstacle == null )
         {
             Destroy(this.gameObject);
         }
